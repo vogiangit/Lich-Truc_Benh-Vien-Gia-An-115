@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lịch Trực Bộ Phận Quản Lý Hạ Tầng - BV Gia An 115</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SheetJS for authentic Excel (.xlsx) export & import -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- html2pdf.js for authentic A4 Landscape PDF export -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+
+    /* Custom Scrollbar for smooth horizontal table scrolling */
+    .table-container::-webkit-scrollbar {
+      height: 10px;
+      width: 10px;
+    }
+    .table-container::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 6px;
+    }
+    .table-container::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 6px;
+    }
+    .table-container::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+
+    /* Sticky columns setup */
+    .sticky-col-1 {
+      position: sticky;
+      left: 0;
+      z-index: 20;
+    }
+    .sticky-col-2 {
+      position: sticky;
+      left: 56px;
+      z-index: 20;
+    }
+    .sticky-col-3 {
+      position: sticky;
+      left: 100px;
+      z-index: 20;
+      box-shadow: 3px 0 6px -2px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Shift cell styles */
+    .shift-cell {
+      user-select: none;
+      transition: transform 0.06s ease, box-shadow 0.06s ease;
+    }
+    .shift-cell:hover {
+      box-shadow: inset 0 0 0 2px #2563eb;
+      z-index: 15;
+    }
+
+    /* Print optimization (A4 Landscape) */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 8mm;
+      }
+      body {
+        background: white !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .print-only {
+        display: block !important;
+      }
+      .table-container {
+        overflow: visible !important;
+        max-height: none !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+      table {
+        font-size: 8px !important;
+        width: 100% !important;
+      }
+      th, td {
+        padding: 2px 1px !important;
+        border: 1px solid #475569 !important;
+      }
+      .sticky-col-1, .sticky-col-2, .sticky-col-3 {
+        position: static !important;
+        box-shadow: none !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Top Navigation & Header -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm no-print">
+    <div class="max-w-[1800px] mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <!-- Brand / Hospital Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-sm">
+          <i data-lucide="calendar-check-2" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">BV Gia An - 115</span>
+            <span class="text-xs font-medium text-slate-500">Bộ phận Quản Lý Hạ Tầng</span>
+          </div>
+          <h1 id="headerTitle" class="text-lg sm:text-xl font-bold text-slate-900 leading-tight mt-0.5">
+            LỊCH TRỰC THÁNG 08/2026
+          </h1>
+        </div>
+      </div>
+
+      <!-- Month / Year Selector & Quick Controls -->
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+          <button onclick="changeMonth(-1)" title="Tháng trước" class="p-1.5 rounded-lg hover:bg-white hover:shadow-sm text-slate-700 transition">
+            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          </button>
+          <select id="monthSelect" onchange="onMonthYearChange()" class="bg-transparent font-semibold text-sm text-slate-800 px-2 py-1 focus:outline-none cursor-pointer">
+            <option value="1">Tháng 01</option>
+            <option value="2">Tháng 02</option>
+            <option value="3">Tháng 03</option>
+            <option value="4">Tháng 04</option>
+            <option value="5">Tháng 05</option>
+            <option value="6">Tháng 06</option>
+            <option value="7">Tháng 07</option>
+            <option value="8" selected>Tháng 08</option>
+            <option value="9">Tháng 09</option>
+            <option value="10">Tháng 10</option>
+            <option value="11">Tháng 11</option>
+            <option value="12">Tháng 12</option>
+          </select>
+          <select id="yearSelect" onchange="onMonthYearChange()" class="bg-transparent font-semibold text-sm text-slate-800 px-2 py-1 focus:outline-none cursor-pointer border-l border-slate-300">
+          </select>
+          <button onclick="changeMonth(1)" title="Tháng sau" class="p-1.5 rounded-lg hover:bg-white hover:shadow-sm text-slate-700 transition">
+            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Standard Hours Target Config -->
+        <div class="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-medium text-slate-700" title="Định mức giờ chuẩn trong tháng để tính tăng ca 150%">
+          <span>Chuẩn:</span>
+          <input id="standardHoursInput" type="number" value="208" min="100" max="300" step="4" onchange="updateStandardHours(this.value)"
+            class="w-16 bg-white border border-slate-300 rounded px-1.5 py-0.5 text-center font-bold text-slate-900 focus:outline-none focus:border-blue-500" />
+          <span>giờ</span>
+        </div>
+
+        <!-- Action Buttons -->
+        <button onclick="autoScheduleSmart()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold px-3 py-2 rounded-xl shadow-sm transition">
+          <i data-lucide="wand-2" class="w-4 h-4"></i>
+          <span>Tự động xếp lịch</span>
+        </button>
+
+        <button onclick="openStaffModal()" class="flex items-center gap-1.5 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 text-xs sm:text-sm font-semibold px-3 py-2 rounded-xl shadow-sm transition">
+          <i data-lucide="users" class="w-4 h-4 text-blue-600"></i>
+          <span>Nhân sự (<span id="staffCountBadge">12</span>)</span>
+        </button>
+
+        <div class="relative inline-block">
+          <button onclick="toggleExportMenu()" class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs sm:text-sm font-semibold px-3 py-2 rounded-xl shadow-sm transition">
+            <i data-lucide="download" class="w-4 h-4"></i>
+            <span>Xuất / In</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5"></i>
+          </button>
+          <div id="exportMenu" class="hidden absolute right-0 mt-2 w-60 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-50">
+            <button onclick="exportToExcel(); toggleExportMenu()" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4 text-emerald-600"></i>
+              Xuất file Excel (.xlsx)
+            </button>
+            <button onclick="exportToPDF(); toggleExportMenu()" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2">
+              <i data-lucide="file-down" class="w-4 h-4 text-rose-600"></i>
+              Xuất file PDF (A4 đầy đủ)
+            </button>
+            <button onclick="exportToCSV(); toggleExportMenu()" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2">
+              <i data-lucide="file-text" class="w-4 h-4 text-blue-600"></i>
+              Xuất file CSV (.csv)
+            </button>
+            <button onclick="window.print(); toggleExportMenu()" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 flex items-center gap-2">
+              <i data-lucide="printer" class="w-4 h-4 text-slate-600"></i>
+              In lịch trực (A4 Ngang)
+            </button>
+            <div class="border-t border-slate-100 my-1"></div>
+            <button onclick="restoreSampleAugust2026(); toggleExportMenu()" class="w-full text-left px-4 py-2 text-sm text-amber-700 hover:bg-amber-50 flex items-center gap-2">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              Khôi phục mẫu T08/2026
+            </button>
+            <button onclick="clearCurrentMonth(); toggleExportMenu()" class="w-full text-left px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 flex items-center gap-2">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+              Xóa trắng lịch tháng này
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-[1800px] w-full mx-auto px-4 py-4 space-y-4">
+
+    <!-- Print-only Official Hospital Header -->
+    <div class="hidden print-only mb-3">
+      <div class="flex justify-between items-start border-b border-slate-400 pb-2">
+        <div>
+          <div class="font-bold text-xs uppercase">BỆNH VIỆN GIA AN 115</div>
+          <div class="font-semibold text-xs">BỘ PHẬN QUẢN LÝ HẠ TẦNG</div>
+        </div>
+        <div class="text-center">
+          <div id="printTitle" class="font-bold text-base uppercase">LỊCH TRỰC THÁNG 08/2026</div>
+          <div id="printSubtitle" class="text-xs italic">Từ ngày 01/08/2026 đến 31/08/2026</div>
+        </div>
+        <div class="text-right text-xs">
+          <div>Mã biểu mẫu: QLHT-LT</div>
+          <div>Chuẩn giờ: <span id="printStdHours">208</span>h</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Brush Palette & Quick Mode Toolbar -->
+    <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm flex flex-wrap items-center justify-between gap-3 no-print">
+      <div class="flex flex-wrap items-center gap-1.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-500 mr-1 flex items-center gap-1">
+          <i data-lucide="paintbrush" class="w-3.5 h-3.5 text-blue-600"></i>
+          Chọn mã ca trực:
+        </span>
+        <button onclick="setBrush(null)" id="brush-none"
+          class="px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1 ring-2 ring-blue-500 bg-blue-50 text-blue-800 border-blue-300">
+          <i data-lucide="mouse-pointer" class="w-3.5 h-3.5"></i>
+          Chọn menu
+        </button>
+        <div id="brushPalette" class="flex flex-wrap items-center gap-1.5">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 text-xs text-slate-500">
+        <span class="hidden xl:inline">Mẹo: Chọn mã ca trên thanh cọ rồi <strong>click hoặc kéo chuột</strong> qua nhiều ô để điền nhanh. Phím tắt: <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded">1</kbd>=D1, <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded">2</kbd>=M6, <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded">3</kbd>=N7, <kbd class="px-1.5 py-0.5 bg-slate-100 border rounded">0</kbd>=OFF</span>
+        <button onclick="toggleValidationPanel()" id="validationBadgeBtn"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100 transition">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600"></i>
+          <span>Chú ý (<span id="warningCount">0</span>)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Collapsible Smart Validation / Warnings Panel -->
+    <div id="validationPanel" class="hidden bg-amber-50/90 border border-amber-200 rounded-2xl p-4 shadow-sm no-print">
+      <div class="flex items-center justify-between mb-2">
+        <h3 class="text-sm font-bold text-amber-900 flex items-center gap-2">
+          <i data-lucide="shield-alert" class="w-4 h-4 text-amber-600"></i>
+          Kiểm tra ràng buộc & Định biên trực trong tháng
+        </h3>
+        <button onclick="toggleValidationPanel()" class="text-amber-700 hover:text-amber-900 p-1">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div id="validationList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 text-xs">
+        <!-- Populated dynamically -->
+      </div>
+    </div>
+
+    <!-- Main Schedule Grid Card -->
+    <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-4 py-2.5 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2 no-print">
+        <div class="flex items-center gap-2 text-xs text-slate-600">
+          <span class="font-semibold text-slate-800" id="dateRangeLabel">Từ ngày 01/08/2026 đến 31/08/2026</span>
+          <span>•</span>
+          <span>Định biên chuẩn: <strong>2 người M6</strong> & <strong>2 người N7</strong> mỗi ngày</span>
+        </div>
+        <div class="flex items-center gap-3 text-xs">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> Đủ định biên (2)</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> Thiếu/Thừa ca</span>
+        </div>
+      </div>
+
+      <!-- Scrollable Schedule Table -->
+      <div class="table-container overflow-x-auto max-h-[72vh] relative select-none" id="tableScrollContainer">
+        <table class="w-full border-collapse text-xs text-center">
+          <thead id="scheduleThead" class="sticky top-0 z-30 bg-slate-100 text-slate-800 shadow-sm">
+            <!-- Dynamically rendered -->
+          </thead>
+          <tbody id="scheduleTbody" class="divide-y divide-slate-200">
+            <!-- Dynamically rendered -->
+          </tbody>
+          <tfoot id="scheduleTfoot" class="bg-slate-50 font-semibold border-t-2 border-slate-300">
+            <!-- Daily coverage stats dynamically rendered -->
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Bottom Legend & Official Footer -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <!-- Shift Codes Legend -->
+      <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5 flex items-center gap-1.5">
+          <i data-lucide="info" class="w-4 h-4 text-blue-600"></i>
+          Ký hiệu quy ước & Quy đổi giờ công
+        </h4>
+        <div id="legendGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 text-xs">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Signature / Approval Block -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm flex flex-col justify-between">
+        <div class="text-xs text-slate-500 flex justify-between items-center">
+          <span>Đơn vị: <strong>Quản Lý Hạ Tầng</strong></span>
+          <span id="saveStatusBadge" class="text-emerald-600 font-medium flex items-center gap-1 no-print">
+            <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Đã lưu tự động
+          </span>
+        </div>
+        <div class="grid grid-cols-2 gap-4 text-center mt-4 pt-3 border-t border-slate-100">
+          <div>
+            <div class="text-xs font-bold text-slate-700 uppercase">Người lập biểu</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Phụ trách bộ phận QLHT</div>
+            <div class="h-10"></div>
+            <div class="text-xs font-semibold text-slate-800">Phạm Hữu Nghĩa</div>
+          </div>
+          <div>
+            <div class="text-xs font-bold text-slate-700 uppercase">Ban Giám Đốc duyệt</div>
+            <div class="text-[11px] text-slate-500 mt-0.5">Bệnh viện Gia An 115</div>
+            <div class="h-10"></div>
+            <div class="text-xs font-semibold text-slate-400 italic">(Ký & ghi rõ họ tên)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Quick Cell Popover Menu -->
+  <div id="cellPopover" class="hidden fixed z-50 bg-white rounded-xl shadow-2xl border border-slate-200 p-2 w-60">
+    <div class="px-2 py-1 border-b border-slate-100 mb-1.5 flex items-center justify-between">
+      <span id="popoverTitle" class="text-xs font-bold text-slate-800 truncate">Chọn ca trực</span>
+      <button onclick="closePopover()" class="text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-3.5 h-3.5"></i>
+      </button>
+    </div>
+    <div id="popoverOptions" class="grid grid-cols-3 gap-1">
+      <!-- Populated dynamically -->
+    </div>
+    <button onclick="applyCellShift('')" class="mt-1.5 w-full py-1 text-xs font-medium text-rose-600 hover:bg-rose-50 rounded-lg border border-rose-100 transition">
+      Xóa trống ô (Delete)
+    </button>
+  </div>
+
+  <!-- Staff Management Modal -->
+  <div id="staffModal" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[88vh] flex flex-col overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+        <div>
+          <h3 class="text-base font-bold text-slate-900">Quản lý danh sách nhân sự Hạ Tầng</h3>
+          <p class="text-xs text-slate-500">Thêm, sửa thông tin hoặc phân nhóm Hành chính / Trực ca xoay tua</p>
+        </div>
+        <button onclick="closeStaffModal()" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-200">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Add New Staff Form -->
+      <form onsubmit="handleAddStaff(event)" class="p-4 bg-blue-50/50 border-b border-slate-200 grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-end">
+        <div class="sm:col-span-3">
+          <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">MSNV *</label>
+          <input id="newStaffCode" type="text" required placeholder="VD: 890"
+            class="w-full px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" />
+        </div>
+        <div class="sm:col-span-5">
+          <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Họ và tên *</label>
+          <input id="newStaffName" type="text" required placeholder="VD: Nguyễn Văn A"
+            class="w-full px-3 py-1.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500" />
+        </div>
+        <div class="sm:col-span-4 flex gap-2">
+          <div class="flex-1">
+            <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Nhóm</label>
+            <select id="newStaffGroup" class="w-full px-2 py-1.5 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500">
+              <option value="shift">Trực ca (M6/N7)</option>
+              <option value="admin">Hành chính (D1)</option>
+            </select>
+          </div>
+          <button type="submit" class="self-end px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-lg shadow-sm transition">
+            + Thêm
+          </button>
+        </div>
+      </form>
+
+      <!-- Staff List -->
+      <div class="flex-1 overflow-y-auto p-4 divide-y divide-slate-100" id="staffModalList">
+        <!-- Populated dynamically -->
+      </div>
+
+      <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 flex justify-end">
+        <button onclick="closeStaffModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-semibold rounded-xl transition">
+          Hoàn tất
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-sm font-medium flex items-center gap-2.5 transition-all">
+    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toastMessage">Thao tác thành công</span>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. SHIFT DEFINITIONS & CONFIGURATION
+    // =========================================================================
+    const SHIFT_DEFS = {
+      'D1':    { code: 'D1',    label: '7h-16h',    desc: 'Ca hành chính (8h)', hours: 8,  bg: 'bg-sky-100',     text: 'text-sky-900',     border: 'border-sky-300',     hex: 'E0F2FE' },
+      'D3':    { code: 'D3',    label: '8h-17h',    desc: 'Ca hành chính (8h)', hours: 8,  bg: 'bg-cyan-100',    text: 'text-cyan-900',    border: 'border-cyan-300',    hex: 'CFFAFE' },
+      'M6':    { code: 'M6',    label: '7h-19h',    desc: 'Ca trực ngày (12h)', hours: 12, bg: 'bg-amber-100',   text: 'text-amber-900',   border: 'border-amber-300',   hex: 'FEF3C7' },
+      'N7':    { code: 'N7',    label: '19h-7h',    desc: 'Ca trực đêm (12h)',  hours: 12, bg: 'bg-indigo-100',  text: 'text-indigo-900',  border: 'border-indigo-300',  hex: 'E0E7FF' },
+      'N6':    { code: 'N6',    label: 'Ca đêm',    desc: 'Ca trực đêm (12h)',  hours: 12, bg: 'bg-purple-100',  text: 'text-purple-900',  border: 'border-purple-300',  hex: 'F3E8FF' },
+      'AL':    { code: 'AL',    label: 'Phép năm',  desc: 'Nghỉ phép năm (8h)', hours: 8,  bg: 'bg-emerald-100', text: 'text-emerald-900', border: 'border-emerald-300', hex: 'D1FAE5' },
+      'TH':    { code: 'TH',    label: 'Nghỉ lễ',   desc: 'Nghỉ lễ/Tết (8h)',   hours: 8,  bg: 'bg-teal-100',    text: 'text-teal-900',    border: 'border-teal-300',    hex: 'CCFBF1' },
+      'BT':    { code: 'BT',    label: 'Bù trực',   desc: 'Nghỉ bù trực (8h)',  hours: 8,  bg: 'bg-lime-100',    text: 'text-lime-900',    border: 'border-lime-300',    hex: 'ECFCCB' },
+      'OFF':   { code: 'OFF',   label: 'Nghỉ tuần', desc: 'Nghỉ hàng tuần (0h)',hours: 0,  bg: 'bg-slate-200',   text: 'text-slate-600',   border: 'border-slate-300',   hex: 'E2E8F0' },
+      'OFF/2': { code: 'OFF/2', label: 'Nghỉ 1/2',  desc: 'Nghỉ nửa ngày (4h)', hours: 4,  bg: 'bg-orange-100',  text: 'text-orange-900',  border: 'border-orange-300',  hex: 'FFEDD5' },
+      'D9':    { code: 'D9',    label: 'Ca D9',     desc: 'Ca bổ sung (8h)',    hours: 8,  bg: 'bg-blue-100',    text: 'text-blue-900',    border: 'border-blue-300',    hex: 'DBEAFE' },
+      'A1':    { code: 'A1',    label: 'Ca A1',     desc: 'Ca bổ sung (8h)',    hours: 8,  bg: 'bg-fuchsia-100', text: 'text-fuchsia-900', border: 'border-fuchsia-300', hex: 'FAE8FF' }
+    };
+
+    const SHIFT_ORDER = ['D1', 'D3', 'M6', 'N7', 'N6', 'AL', 'TH', 'BT', 'OFF', 'OFF/2', 'D9', 'A1'];
+    const DAY_NAMES_VI = ['CN', 'Hai', 'Ba', 'Tư', 'Năm', 'Sáu', 'Bảy'];
+
+    // =========================================================================
+    // 2. EXACT DEFAULT DATA (AUGUST 2026 - 31 DAYS)
+    // =========================================================================
+    const SAMPLE_AUG_2026_STAFF = [
+      {
+        id: 'emp_1', msnv: '38', name: 'Phạm Hữu Nghĩa', group: 'admin',
+        shifts: ['D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1']
+      },
+      {
+        id: 'emp_2', msnv: '1074', name: 'Hồ Thanh Tùng', group: 'admin',
+        shifts: ['D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1']
+      },
+      {
+        id: 'emp_3', msnv: '1074', name: 'Trần Thanh Tú', group: 'admin',
+        shifts: ['D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1']
+      },
+      {
+        id: 'emp_4', msnv: '1074', name: 'Nguyễn Ngọc Thạch', group: 'admin',
+        shifts: ['D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1','D1','D1','D1','D1','D1','OFF','D1']
+      },
+      {
+        id: 'emp_5', msnv: '351', name: 'Cao Nguyên Toàn', group: 'shift',
+        shifts: ['M6','M6','OFF','N7','N7','OFF','D1','M6','M6','OFF','N7','N7','OFF','D1','M6','M6','OFF','N7','N7','OFF','D1','M6','M6','OFF','N7','N7','OFF','D1','D1','OFF','OFF']
+      },
+      {
+        id: 'emp_6', msnv: '1074', name: 'Đỗ Vũ Trung', group: 'shift',
+        shifts: ['M6','M6','OFF','D1','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1','OFF','D1']
+      },
+      {
+        id: 'emp_7', msnv: '56', name: 'Nguyễn Tuấn Anh', group: 'shift',
+        shifts: ['N7','N7','OFF','M6','M6','OFF','N7','N7','OFF','M6','M6','OFF','N7','N7','OFF','M6','M6','OFF','N7','N7','OFF','M6','M6','OFF','N7','N7','OFF','M6','M6','OFF','OFF']
+      },
+      {
+        id: 'emp_8', msnv: '57', name: 'Trần N.Hiếu Thuận', group: 'shift',
+        shifts: ['N7','N7','OFF','D1','D1','N7','N7','OFF','M6','M6','OFF','D1','D1','N7','N7','OFF','M6','M6','OFF','D1','D1','N7','N7','OFF','M6','M6','OFF','D1','D1','OFF','M6']
+      },
+      {
+        id: 'emp_9', msnv: '175', name: 'Bùi Thanh Tuấn', group: 'shift',
+        shifts: ['OFF','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1']
+      },
+      {
+        id: 'emp_10', msnv: '372', name: 'Phạm Hoàng Nam', group: 'shift',
+        shifts: ['OFF','OFF','M6','N7','N7','OFF','D1','N7','N7','OFF','D1','D1','N7','N7','OFF','D1','D1','N7','N7','OFF','D1','D1','N7','N7','OFF','D1','D1','N7','N7','OFF','M6']
+      },
+      {
+        id: 'emp_11', msnv: '580', name: 'Trần Chí Công', group: 'shift',
+        shifts: ['OFF','OFF','N7','D1','D1','M6','M6','OFF','N7','N7','OFF','M6','M6','OFF','D1','N7','N7','OFF','M6','M6','OFF','D1','D1','M6','M6','OFF','N7','N7','OFF','M6','N7']
+      },
+      {
+        id: 'emp_12', msnv: '726', name: 'Vũ Thanh Long', group: 'shift',
+        shifts: ['OFF','OFF','N7','D1','D1','N7','N7','OFF','D1','M6','M6','OFF','D1','M6','M6','OFF','D1','D1','M6','M6','OFF','D1','D1','N7','N7','OFF','M6','M6','OFF','N7','N7']
+      }
+    ];
+
+    // =========================================================================
+    // 3. APPLICATION STATE & STORAGE
+    // =========================================================================
+    const STORAGE_KEY = 'bv_gia_an_115_qlht_schedules_v1';
+
+    let state = {
+      year: 2026,
+      month: 8,
+      standardHours: 208,
+      activeBrush: null,
+      isMouseDown: false,
+      activeCell: null,
+      schedules: {}
+    };
+
+    function getMonthKey(year, month) {
+      return `${year}-${String(month).padStart(2, '0')}`;
+    }
+
+    function getDaysInMonth(year, month) {
+      return new Date(year, month, 0).getDate();
+    }
+
+    function loadState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          state.year = parsed.year || 2026;
+          state.month = parsed.month || 8;
+          state.standardHours = parsed.standardHours || 208;
+          state.schedules = parsed.schedules || {};
+        }
+      } catch (e) {
+        console.error('Failed to load state:', e);
+      }
+
+      if (!state.schedules['2026-08']) {
+        state.schedules['2026-08'] = JSON.parse(JSON.stringify(SAMPLE_AUG_2026_STAFF));
+      }
+      ensureCurrentMonthData();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          year: state.year,
+          month: state.month,
+          standardHours: state.standardHours,
+          schedules: state.schedules
+        }));
+        const badge = document.getElementById('saveStatusBadge');
+        if (badge) {
+          badge.innerHTML = `<i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Đã lưu (${new Date().toLocaleTimeString('vi-VN', {hour:'2-digit', minute:'2-digit'})})`;
+          lucide.createIcons();
+        }
+      } catch (e) {
+        console.error('Failed to save state:', e);
+      }
+    }
+
+    function ensureCurrentMonthData() {
+      const key = getMonthKey(state.year, state.month);
+      const daysCount = getDaysInMonth(state.year, state.month);
+
+      if (!state.schedules[key]) {
+        const templateRoster = state.schedules['2026-08'] || SAMPLE_AUG_2026_STAFF;
+        state.schedules[key] = templateRoster.map(emp => ({
+          id: emp.id,
+          msnv: emp.msnv,
+          name: emp.name,
+          group: emp.group || 'shift',
+          shifts: Array(daysCount).fill('')
+        }));
+      } else {
+        state.schedules[key].forEach(emp => {
+          if (emp.shifts.length < daysCount) {
+            emp.shifts = [...emp.shifts, ...Array(daysCount - emp.shifts.length).fill('')];
+          } else if (emp.shifts.length > daysCount) {
+            emp.shifts = emp.shifts.slice(0, daysCount);
+          }
+        });
+      }
+    }
+
+    function getCurrentRoster() {
+      const key = getMonthKey(state.year, state.month);
+      ensureCurrentMonthData();
+      return state.schedules[key];
+    }
+
+    // =========================================================================
+    // 4. CORE CALCULATIONS (REALTIME FORMULAS)
+    // =========================================================================
+    function calculateEmployeeStats(emp) {
+      let countAL = 0;
+      let countTH = 0;
+      let countD1D3 = 0;
+      let countM6 = 0;
+      let countN7 = 0;
+      let countN6 = 0;
+      let countOFF = 0;
+      let totalHours = 0;
+
+      emp.shifts.forEach(code => {
+        const c = (code || '').trim().toUpperCase();
+        if (!c) return;
+
+        if (c === 'AL') countAL++;
+        if (c === 'TH') countTH++;
+        if (c === 'D1' || c === 'D3') countD1D3++;
+        if (c === 'M6') countM6++;
+        if (c === 'N7') countN7++;
+        if (c === 'N6') countN6++;
+        if (c === 'OFF') countOFF++;
+
+        const def = SHIFT_DEFS[c];
+        if (def) {
+          totalHours += def.hours;
+        }
+      });
+
+      const overtime150 = Math.max(0, totalHours - state.standardHours);
+
+      return {
+        countAL,
+        countTH,
+        countD1D3,
+        countM6,
+        countN7,
+        countN6,
+        countOFF,
+        overtime150,
+        totalHours
+      };
+    }
+
+    function calculateDailyCoverage(roster, daysCount) {
+      const daily = [];
+      for (let d = 0; d < daysCount; d++) {
+        let d1d3 = 0, m6 = 0, n7 = 0, n6 = 0, off = 0;
+        roster.forEach(emp => {
+          const c = (emp.shifts[d] || '').trim().toUpperCase();
+          if (c === 'D1' || c === 'D3') d1d3++;
+          else if (c === 'M6') m6++;
+          else if (c === 'N7') n7++;
+          else if (c === 'N6') n6++;
+          else if (c === 'OFF') off++;
+        });
+        daily.push({ d1d3, m6, n7, n6, off });
+      }
+      return daily;
+    }
+
+    function validateSchedule(roster, daysCount) {
+      const warnings = [];
+      const daily = calculateDailyCoverage(roster, daysCount);
+
+      daily.forEach((day, idx) => {
+        const dayNum = idx + 1;
+        if (day.m6 < 2) {
+          warnings.push({ type: 'warning', text: `Ngày ${dayNum}: Thiếu nhân sự ca ngày M6 (Chỉ có ${day.m6}/2 người).` });
+        } else if (day.m6 > 3) {
+          warnings.push({ type: 'info', text: `Ngày ${dayNum}: Thừa nhân sự ca ngày M6 (${day.m6} người).` });
+        }
+        if (day.n7 < 2) {
+          warnings.push({ type: 'warning', text: `Ngày ${dayNum}: Thiếu nhân sự ca đêm N7 (Chỉ có ${day.n7}/2 người).` });
+        } else if (day.n7 > 3) {
+          warnings.push({ type: 'info', text: `Ngày ${dayNum}: Thừa nhân sự ca đêm N7 (${day.n7} người).` });
+        }
+      });
+
+      roster.forEach(emp => {
+        const stats = calculateEmployeeStats(emp);
+        if (stats.totalHours < state.standardHours - 16) {
+          warnings.push({ type: 'warning', text: `Nhân sự ${emp.name} (${emp.msnv}): Tổng giờ làm thấp (${stats.totalHours}h / chuẩn ${state.standardHours}h).` });
+        }
+      });
+
+      return warnings;
+    }
+
+    // =========================================================================
+    // 5. RENDERING ENGINE
+    // =========================================================================
+    function renderUI() {
+      renderHeaderInfo();
+      renderYearSelect();
+      renderMonthSelect();
+      renderBrushPalette();
+      renderLegend();
+      renderTable();
+      renderValidationPanelContent();
+      lucide.createIcons();
+    }
+
+    function renderHeaderInfo() {
+      const monthNames = ["", "Tháng 01", "Tháng 02", "Tháng 03", "Tháng 04", "Tháng 05", "Tháng 06", "Tháng 07", "Tháng 08", "Tháng 09", "Tháng 10", "Tháng 11", "Tháng 12"];
+      const titleStr = `LỊCH TRỰC ${monthNames[state.month].toUpperCase()}/${state.year}`;
+      document.getElementById('headerTitle').textContent = titleStr;
+      document.getElementById('printTitle').textContent = titleStr;
+
+      const daysCount = getDaysInMonth(state.year, state.month);
+      const subStr = `Từ ngày 01/${String(state.month).padStart(2,'0')}/${state.year} đến ${daysCount}/${String(state.month).padStart(2,'0')}/${state.year}`;
+      document.getElementById('dateRangeLabel').textContent = subStr;
+      document.getElementById('printSubtitle').textContent = subStr;
+      document.getElementById('printStdHours').textContent = state.standardHours;
+      document.getElementById('standardHoursInput').value = state.standardHours;
+      document.getElementById('monthSelect').value = state.month;
+      document.getElementById('staffCountBadge').textContent = getCurrentRoster().length;
+    }
+
+    function renderYearSelect() {
+      const sel = document.getElementById('yearSelect');
+      let html = '';
+      for (let y = 2024; y <= 2030; y++) {
+        html += `<option value="${y}" ${y === state.year ? 'selected' : ''}>Năm ${y}</option>`;
+      }
+      sel.innerHTML = html;
+    }
+
+    function renderMonthSelect() {
+      document.getElementById('monthSelect').value = state.month;
+    }
+
+    function renderBrushPalette() {
+      const noneBtn = document.getElementById('brush-none');
+      if (noneBtn) {
+        if (state.activeBrush === null) {
+          noneBtn.className = "px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1 ring-2 ring-blue-500 bg-blue-50 text-blue-800 border-blue-300";
+        } else {
+          noneBtn.className = "px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition flex items-center gap-1 bg-white text-slate-700 border-slate-200 hover:bg-slate-50";
+        }
+      }
+
+      const container = document.getElementById('brushPalette');
+      let html = '';
+      SHIFT_ORDER.forEach(code => {
+        const def = SHIFT_DEFS[code];
+        if (!def) return;
+        const isActive = state.activeBrush === code;
+        html += `
+          <button onclick="setBrush('${code}')" 
+            class="px-2.5 py-1.5 rounded-lg text-xs font-bold border transition flex items-center gap-1 ${isActive ? 'ring-2 ring-blue-600 ' + def.bg + ' ' + def.text + ' ' + def.border : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'}">
+            <span>${code}</span>
+            <span class="text-[10px] font-normal opacity-75">(${def.hours}h)</span>
+          </button>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function renderLegend() {
+      const container = document.getElementById('legendGrid');
+      let html = '';
+      SHIFT_ORDER.forEach(code => {
+        const def = SHIFT_DEFS[code];
+        if (!def) return;
+        html += `
+          <div class="flex items-center gap-2 p-2 rounded-xl border border-slate-200 bg-white shadow-xs">
+            <span class="w-8 h-8 rounded-lg ${def.bg} ${def.text} ${def.border} border flex items-center justify-center font-bold text-xs">${code}</span>
+            <div class="overflow-hidden">
+              <div class="font-semibold text-slate-800 text-xs">${def.label}</div>
+              <div class="text-[10px] text-slate-500 truncate">${def.desc}</div>
+            </div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function renderTable() {
+      const roster = getCurrentRoster();
+      const daysCount = getDaysInMonth(state.year, state.month);
+
+      // 1. Render Thead
+      let theadHtml = `
+        <tr>
+          <th class="sticky-col-1 bg-slate-100 px-2 py-2.5 border-b border-r border-slate-300 font-bold text-slate-700 w-10">STT</th>
+          <th class="sticky-col-2 bg-slate-100 px-2 py-2.5 border-b border-r border-slate-300 font-bold text-slate-700 w-14">MSNV</th>
+          <th class="sticky-col-3 bg-slate-100 px-3 py-2.5 border-b border-r border-slate-300 font-bold text-slate-700 text-left min-w-[140px]">Họ và tên</th>
+      `;
+
+      for (let d = 1; d <= daysCount; d++) {
+        const dateObj = new Date(state.year, state.month - 1, d);
+        const dayOfWeek = dateObj.getDay();
+        const isSun = dayOfWeek === 0;
+        const isSat = dayOfWeek === 6;
+        const bgHeader = isSun ? 'bg-rose-100 text-rose-900 border-rose-300' : (isSat ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-slate-100 text-slate-800 border-slate-300');
+
+        theadHtml += `
+          <th class="px-1.5 py-2 border-b border-r ${bgHeader} text-[11px] min-w-[34px] font-bold">
+            <div>${d}</div>
+            <div class="text-[9px] font-medium opacity-80">${DAY_NAMES_VI[dayOfWeek]}</div>
+          </th>
+        `;
+      }
+
+      // Summary columns in header
+      theadHtml += `
+          <th class="px-2 py-2 bg-slate-100 border-b border-r border-slate-300 font-bold text-slate-700 min-w-[36px]" title="Nghỉ phép năm">AL</th>
+          <th class="px-2 py-2 bg-slate-100 border-b border-r border-slate-300 font-bold text-slate-700 min-w-[36px]" title="Nghỉ lễ">TH</th>
+          <th class="px-2 py-2 bg-slate-100 border-b border-r border-slate-300 font-bold text-slate-700 min-w-[36px]" title="Ca Hành chính (D1/D3)">HC</th>
+          <th class="px-2 py-2 bg-slate-100 border-b border-r border-slate-300 font-bold text-slate-700 min-w-[36px]" title="Ca ngày (M6)">M6</th>
+          <th class="px-2 py-2 bg-slate-100 border-b border-r border-slate-300 font-bold text-slate-700 min-w-[36px]" title="Ca đêm (N7)">N7</th>
+          <th class="px-2 py-2 bg-slate-100 border-b border-r border-slate-300 font-bold text-slate-700 min-w-[36px]" title="Ca đêm (N6)">N6</th>
+          <th class="px-2 py-2 bg-slate-100 border-b border-r border-slate-300 font-bold text-slate-700 min-w-[36px]" title="Nghỉ tuần (OFF)">OFF</th>
+          <th class="px-2 py-2 bg-emerald-50 border-b border-r border-emerald-300 font-bold text-emerald-900 min-w-[45px]" title="Tổng giờ công">Tổngh</th>
+          <th class="px-2 py-2 bg-blue-50 border-b border-slate-300 font-bold text-blue-900 min-w-[45px]" title="Tăng ca (> chuẩn)">TC 150%</th>
+        </tr>
+      `;
+      document.getElementById('scheduleThead').innerHTML = theadHtml;
+
+      // 2. Render Tbody
+      let tbodyHtml = '';
+      roster.forEach((emp, empIdx) => {
+        const stats = calculateEmployeeStats(emp);
+        const groupBadge = emp.group === 'admin' ? '<span class="text-[9px] bg-sky-50 text-sky-700 px-1 rounded ml-1 font-normal">HC</span>' : '';
+
+        tbodyHtml += `
+          <tr class="hover:bg-blue-50/40 transition-colors">
+            <td class="sticky-col-1 bg-white px-2 py-1.5 border-b border-r border-slate-200 text-slate-500 font-medium">${empIdx + 1}</td>
+            <td class="sticky-col-2 bg-white px-2 py-1.5 border-b border-r border-slate-200 font-mono text-slate-600 text-xs">${emp.msnv}</td>
+            <td class="sticky-col-3 bg-white px-3 py-1.5 border-b border-r border-slate-200 text-left font-semibold text-slate-800 truncate max-w-[180px]">
+              ${emp.name} ${groupBadge}
+            </td>
+        `;
+
+        for (let d = 0; d < daysCount; d++) {
+          const code = (emp.shifts[d] || '').trim().toUpperCase();
+          const def = SHIFT_DEFS[code];
+          const cellClass = def ? `${def.bg} ${def.text} ${def.border}` : 'bg-white text-slate-400 border-slate-200';
+
+          tbodyHtml += `
+            <td class="p-0 border-b border-r border-slate-200 text-center h-8">
+              <div onclick="onCellClick(${empIdx}, ${d}, event)"
+                onmousedown="onCellMouseDown(${empIdx}, ${d}, event)"
+                onmouseenter="onCellMouseEnter(${empIdx}, ${d})"
+                class="shift-cell w-full h-full min-h-[30px] flex items-center justify-center font-bold text-xs cursor-pointer border ${cellClass}">
+                ${code}
+              </div>
+            </td>
+          `;
+        }
+
+        // Summary stats cells
+        tbodyHtml += `
+            <td class="px-1 py-1.5 border-b border-r border-slate-200 font-medium text-slate-700">${stats.countAL || ''}</td>
+            <td class="px-1 py-1.5 border-b border-r border-slate-200 font-medium text-slate-700">${stats.countTH || ''}</td>
+            <td class="px-1 py-1.5 border-b border-r border-slate-200 font-medium text-slate-700">${stats.countD1D3 || ''}</td>
+            <td class="px-1 py-1.5 border-b border-r border-slate-200 font-medium text-slate-700">${stats.countM6 || ''}</td>
+            <td class="px-1 py-1.5 border-b border-r border-slate-200 font-medium text-slate-700">${stats.countN7 || ''}</td>
+            <td class="px-1 py-1.5 border-b border-r border-slate-200 font-medium text-slate-700">${stats.countN6 || ''}</td>
+            <td class="px-1 py-1.5 border-b border-r border-slate-200 font-medium text-slate-700">${stats.countOFF || ''}</td>
+            <td class="px-1 py-1.5 border-b border-r border-emerald-200 bg-emerald-50/50 font-bold text-emerald-800">${stats.totalHours}</td>
+            <td class="px-1 py-1.5 border-b border-slate-200 bg-blue-50/50 font-bold text-blue-800">${stats.overtime150 > 0 ? '+' + stats.overtime150 : '0'}</td>
+          </tr>
+        `;
+      });
+      document.getElementById('scheduleTbody').innerHTML = tbodyHtml;
+
+      // 3. Render Tfoot (Daily Coverage Totals)
+      const daily = calculateDailyCoverage(roster, daysCount);
+      let tfootHtml = `
+        <tr>
+          <td colspan="3" class="sticky-col-1 sticky-col-2 sticky-col-3 bg-slate-100 px-3 py-2 text-right font-bold text-slate-700 border-t border-r border-slate-300">
+            Định biên ca Ngày (M6 = 2) & Đêm (N7 = 2):
+          </td>
+      `;
+
+      for (let d = 0; d < daysCount; d++) {
+        const dayStat = daily[d];
+        const isOkM6 = dayStat.m6 === 2;
+        const isOkN7 = dayStat.n7 === 2;
+        const isOkAll = isOkM6 && isOkN7;
+        const bgDot = isOkAll ? 'bg-emerald-500' : 'bg-rose-500';
+
+        tfootHtml += `
+          <td class="px-1 py-1.5 border-t border-r border-slate-300 text-[10px]" title="Ngày ${d+1}: M6=${dayStat.m6}, N7=${dayStat.n7}">
+            <div class="flex flex-col items-center justify-center gap-0.5">
+              <span class="w-2 h-2 rounded-full ${bgDot}" title="M6:${dayStat.m6} | N7:${dayStat.n7}"></span>
+              <span class="font-bold text-slate-700">M:${dayStat.m6}</span>
+              <span class="font-bold text-slate-600">N:${dayStat.n7}</span>
+            </div>
+          </td>
+        `;
+      }
+
+      tfootHtml += `<td colspan="9" class="bg-slate-100 border-t border-slate-300"></td></tr>`;
+      document.getElementById('scheduleTfoot').innerHTML = tfootHtml;
+
+      // Update validation warnings badge
+      const warnings = validateSchedule(roster, daysCount);
+      document.getElementById('warningCount').textContent = warnings.length;
+      const warningBtn = document.getElementById('validationBadgeBtn');
+      if (warnings.length > 0) {
+        warningBtn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 transition";
+      } else {
+        warningBtn.className = "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100 transition";
+      }
+    }
+
+    function renderValidationPanelContent() {
+      const roster = getCurrentRoster();
+      const daysCount = getDaysInMonth(state.year, state.month);
+      const warnings = validateSchedule(roster, daysCount);
+      const container = document.getElementById('validationList');
+
+      if (warnings.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 flex items-center gap-2">
+            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0"></i>
+            <span>Tuyệt vời! Lịch trực tháng này đã chuẩn định biên 2 người ca M6, 2 người ca N7 mỗi ngày và đảm bảo giờ công.</span>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      warnings.forEach(w => {
+        const isWarn = w.type === 'warning';
+        const bg = isWarn ? 'bg-amber-50 border-amber-200 text-amber-900' : 'bg-blue-50 border-blue-200 text-blue-900';
+        const icon = isWarn ? 'alert-triangle' : 'info';
+        const iconColor = isWarn ? 'text-amber-600' : 'text-blue-600';
+
+        html += `
+          <div class="p-2.5 rounded-xl border ${bg} flex items-start gap-2 shadow-xs">
+            <i data-lucide="${icon}" class="w-4 h-4 ${iconColor} shrink-0 mt-0.5"></i>
+            <span class="font-medium">${w.text}</span>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    // =========================================================================
+    // 6. INTERACTION & EDITING LOGIC
+    // =========================================================================
+    function setBrush(code) {
+      state.activeBrush = code;
+      renderBrushPalette();
+      showToast(code ? `Đã chọn cọ: ${code} (${SHIFT_DEFS[code]?.label || ''})` : 'Đã về chế độ Click mở menu');
+    }
+
+    function toggleValidationPanel() {
+      const panel = document.getElementById('validationPanel');
+      panel.classList.toggle('hidden');
+      if (!panel.classList.contains('hidden')) {
+        renderValidationPanelContent();
+      }
+    }
+
+    function toggleExportMenu() {
+      const menu = document.getElementById('exportMenu');
+      menu.classList.toggle('hidden');
+    }
+
+    window.addEventListener('click', (e) => {
+      if (!e.target.closest('button[onclick="toggleExportMenu()"]') && !e.target.closest('#exportMenu')) {
+        document.getElementById('exportMenu').classList.add('hidden');
+      }
+    });
+
+    function changeMonth(delta) {
+      state.month += delta;
+      if (state.month > 12) {
+        state.month = 1;
+        state.year++;
+      } else if (state.month < 1) {
+        state.month = 12;
+        state.year--;
+      }
+      ensureCurrentMonthData();
+      renderUI();
+      saveState();
+    }
+
+    function onMonthYearChange() {
+      state.month = parseInt(document.getElementById('monthSelect').value);
+      state.year = parseInt(document.getElementById('yearSelect').value);
+      ensureCurrentMonthData();
+      renderUI();
+      saveState();
+    }
+
+    function updateStandardHours(val) {
+      const v = parseInt(val);
+      if (!isNaN(v) && v >= 100 && v <= 300) {
+        state.standardHours = v;
+        renderUI();
+        saveState();
+      }
+    }
+
+    function onCellClick(empIdx, dayIdx, event) {
+      if (state.activeBrush !== null) {
+        applyShiftToCell(empIdx, dayIdx, state.activeBrush);
+      } else {
+        openPopover(empIdx, dayIdx, event.currentTarget);
+      }
+    }
+
+    function onCellMouseDown(empIdx, dayIdx, event) {
+      if (state.activeBrush !== null) {
+        state.isMouseDown = true;
+        applyShiftToCell(empIdx, dayIdx, state.activeBrush);
+        event.preventDefault();
+      }
+    }
+
+    function onCellMouseEnter(empIdx, dayIdx) {
+      if (state.isMouseDown && state.activeBrush !== null) {
+        applyShiftToCell(empIdx, dayIdx, state.activeBrush);
+      }
+    }
+
+    window.addEventListener('mouseup', () => {
+      state.isMouseDown = false;
+    });
+
+    function applyShiftToCell(empIdx, dayIdx, code) {
+      const roster = getCurrentRoster();
+      roster[empIdx].shifts[dayIdx] = code;
+      renderTable();
+      saveState();
+    }
+
+    function openPopover(empIdx, dayIdx, targetEl) {
+      state.activeCell = { empIdx, dayIdx };
+      const roster = getCurrentRoster();
+      const emp = roster[empIdx];
+      const currentVal = emp.shifts[dayIdx] || 'Trống';
+
+      const popover = document.getElementById('cellPopover');
+      document.getElementById('popoverTitle').textContent = `${emp.name} - Ngày ${dayIdx + 1} (${currentVal})`;
+
+      const optionsContainer = document.getElementById('popoverOptions');
+      let html = '';
+      SHIFT_ORDER.forEach(code => {
+        const def = SHIFT_DEFS[code];
+        if (!def) return;
+        html += `
+          <button onclick="applyCellShift('${code}')" class="p-2 rounded-lg border ${def.bg} ${def.text} ${def.border} hover:opacity-80 font-bold text-xs text-center transition">
+            <div>${code}</div>
+            <div class="text-[9px] font-normal opacity-75">${def.label}</div>
+          </button>
+        `;
+      });
+      optionsContainer.innerHTML = html;
+
+      const rect = targetEl.getBoundingClientRect();
+      popover.style.top = `${Math.min(window.innerHeight - 250, rect.bottom + 5)}px`;
+      popover.style.left = `${Math.min(window.innerWidth - 260, Math.max(10, rect.left - 100))}px`;
+      popover.classList.remove('hidden');
+    }
+
+    function closePopover() {
+      document.getElementById('cellPopover').classList.add('hidden');
+      state.activeCell = null;
+    }
+
+    function applyCellShift(code) {
+      if (state.activeCell) {
+        const { empIdx, dayIdx } = state.activeCell;
+        applyShiftToCell(empIdx, dayIdx, code);
+        closePopover();
+      }
+    }
+
+    window.addEventListener('click', (e) => {
+      if (!e.target.closest('#cellPopover') && !e.target.closest('.shift-cell')) {
+        closePopover();
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+      if (e.key === '1') setBrush('D1');
+      else if (e.key === '2') setBrush('M6');
+      else if (e.key === '3') setBrush('N7');
+      else if (e.key === '0') setBrush('OFF');
+      else if (e.key === 'Escape') {
+        setBrush(null);
+        closePopover();
+      }
+    });
+
+    // =========================================================================
+    // 7. SMART AUTO-SCHEDULING ALGORITHM
+    // =========================================================================
+    function autoScheduleSmart() {
+      if (!confirm('Hệ thống sẽ tự động xếp lịch trực thông minh cho tháng này (đảm bảo định biên 2 M6 và 2 N7 mỗi ngày, cân đối giờ công). Tiếp tục?')) return;
+
+      const roster = getCurrentRoster();
+      const daysCount = getDaysInMonth(state.year, state.month);
+      const shiftStaff = roster.filter(e => e.group === 'shift');
+      const adminStaff = roster.filter(e => e.group === 'admin');
+
+      adminStaff.forEach(emp => {
+        emp.shifts = [];
+        for (let d = 1; d <= daysCount; d++) {
+          const dateObj = new Date(state.year, state.month - 1, d);
+          const isSun = dateObj.getDay() === 0;
+          emp.shifts.push(isSun ? 'OFF' : 'D1');
+        }
+      });
+
+      shiftStaff.forEach((emp, idx) => {
+        emp.shifts = [];
+        for (let d = 1; d <= daysCount; d++) {
+          const dateObj = new Date(state.year, state.month - 1, d);
+          const dayOfWeek = dateObj.getDay();
+
+          const patternIndex = (d + idx * 3) % 7;
+          if (dayOfWeek === 0) {
+            emp.shifts.push(patternIndex < 2 ? 'OFF' : (patternIndex === 2 ? 'M6' : 'OFF'));
+          } else {
+            if (patternIndex === 0) emp.shifts.push('M6');
+            else if (patternIndex === 1) emp.shifts.push('N7');
+            else if (patternIndex === 2) emp.shifts.push('D1');
+            else if (patternIndex === 3) emp.shifts.push('OFF');
+            else if (patternIndex === 4) emp.shifts.push('M6');
+            else if (patternIndex === 5) emp.shifts.push('N7');
+            else emp.shifts.push('OFF');
+          }
+        }
+      });
+
+      for (let d = 0; d < daysCount; d++) {
+        let m6Count = 0;
+        let n7Count = 0;
+        shiftStaff.forEach(emp => {
+          if (emp.shifts[d] === 'M6') m6Count++;
+          if (emp.shifts[d] === 'N7') n7Count++;
+        });
+
+        while (m6Count < 2) {
+          const candidate = shiftStaff.find(e => e.shifts[d] !== 'M6' && e.shifts[d] !== 'N7');
+          if (candidate) {
+            candidate.shifts[d] = 'M6';
+            m6Count++;
+          } else break;
+        }
+        while (m6Count > 2) {
+          const candidate = shiftStaff.find(e => e.shifts[d] === 'M6');
+          if (candidate) {
+            candidate.shifts[d] = 'OFF';
+            m6Count--;
+          } else break;
+        }
+
+        while (n7Count < 2) {
+          const candidate = shiftStaff.find(e => e.shifts[d] !== 'M6' && e.shifts[d] !== 'N7');
+          if (candidate) {
+            candidate.shifts[d] = 'N7';
+            n7Count++;
+          } else break;
+        }
+        while (n7Count > 2) {
+          const candidate = shiftStaff.find(e => e.shifts[d] === 'N7');
+          if (candidate) {
+            candidate.shifts[d] = 'OFF';
+            n7Count--;
+          } else break;
+        }
+      }
+
+      renderUI();
+      saveState();
+      showToast('Đã tự động xếp lịch trực thành công!');
+    }
+
+    // =========================================================================
+    // 8. STAFF MANAGEMENT MODAL
+    // =========================================================================
+    function openStaffModal() {
+      renderStaffModalList();
+      document.getElementById('staffModal').classList.remove('hidden');
+    }
+
+    function closeStaffModal() {
+      document.getElementById('staffModal').classList.add('hidden');
+      renderUI();
+    }
+
+    function renderStaffModalList() {
+      const roster = getCurrentRoster();
+      const container = document.getElementById('staffModalList');
+      let html = '';
+
+      roster.forEach((emp, idx) => {
+        const groupBadge = emp.group === 'admin' ? '<span class="px-2 py-0.5 bg-sky-100 text-sky-800 rounded text-[10px] font-bold">Hành chính</span>' : '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 rounded text-[10px] font-bold">Trực ca</span>';
+
+        html += `
+          <div class="py-2.5 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-3">
+              <span class="w-6 text-xs text-slate-400 font-bold">${idx + 1}</span>
+              <span class="w-14 font-mono text-xs font-semibold text-slate-600">${emp.msnv}</span>
+              <span class="text-sm font-semibold text-slate-800">${emp.name}</span>
+              ${groupBadge}
+            </div>
+            <button onclick="deleteStaff(${idx})" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition" title="Xóa nhân sự">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function handleAddStaff(e) {
+      e.preventDefault();
+      const code = document.getElementById('newStaffCode').value.trim();
+      const name = document.getElementById('newStaffName').value.trim();
+      const group = document.getElementById('newStaffGroup').value;
+
+      if (!code || !name) return;
+
+      const roster = getCurrentRoster();
+      const daysCount = getDaysInMonth(state.year, state.month);
+
+      roster.push({
+        id: 'emp_' + Date.now(),
+        msnv: code,
+        name: name,
+        group: group,
+        shifts: Array(daysCount).fill('')
+      });
+
+      document.getElementById('newStaffCode').value = '';
+      document.getElementById('newStaffName').value = '';
+      renderStaffModalList();
+      saveState();
+      showToast(`Đã thêm nhân sự: ${name}`);
+    }
+
+    function deleteStaff(idx) {
+      const roster = getCurrentRoster();
+      if (roster.length <= 1) {
+        alert('Cần giữ lại ít nhất 1 nhân sự trong danh sách.');
+        return;
+      }
+      if (!confirm(`Xóa nhân sự ${roster[idx].name}?`)) return;
+
+      roster.splice(idx, 1);
+      renderStaffModalList();
+      saveState();
+      showToast('Đã xóa nhân sự');
+    }
+
+    // =========================================================================
+    // 9. EXCEL, PDF & CSV EXPORT
+    // =========================================================================
+    function exportToExcel() {
+      const roster = getCurrentRoster();
+      const daysCount = getDaysInMonth(state.year, state.month);
+
+      const headerRow1 = [`LỊCH TRỰC THÁNG ${state.month}/${state.year} - BỘ PHẬN QUẢN LÝ HẠ TẦNG (BV GIA AN 115)`];
+      const headerRow2 = ['STT', 'MSNV', 'Họ và tên'];
+      for (let d = 1; d <= daysCount; d++) headerRow2.push(`Ngày ${d}`);
+      headerRow2.push('AL', 'TH', 'HC', 'M6', 'N7', 'N6', 'OFF', 'Tổngh', 'TC 150%');
+
+      const aoa = [headerRow1, headerRow2];
+
+      roster.forEach((emp, idx) => {
+        const stats = calculateEmployeeStats(emp);
+        const row = [idx + 1, emp.msnv, emp.name];
+        for (let d = 0; d < daysCount; d++) {
+          row.push(emp.shifts[d] || '');
+        }
+        row.push(stats.countAL, stats.countTH, stats.countD1D3, stats.countM6, stats.countN7, stats.countN6, stats.countOFF, stats.totalHours, stats.overtime150);
+        aoa.push(row);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, `LichTruc_T${state.month}`);
+
+      XLSX.writeFile(wb, `LichTruc_QLHT_BV_GiaAn_115_T${state.month}_${state.year}.xlsx`);
+      showToast('Đã xuất file Excel (.xlsx) thành công!');
+    }
+
+    function exportToPDF() {
+      showToast('Đang khởi tạo file PDF A4 ngang, vui lòng đợi...');
+
+      const roster = getCurrentRoster();
+      const daysCount = getDaysInMonth(state.year, state.month);
+      const daily = calculateDailyCoverage(roster, daysCount);
+      const monthStr = String(state.month).padStart(2, '0');
+
+      const pdfColors = {
+        'D1':    { bg: '#e0f2fe', color: '#0c4a6e' },
+        'D3':    { bg: '#cffafe', color: '#164e63' },
+        'M6':    { bg: '#fef3c7', color: '#78350f' },
+        'N7':    { bg: '#e0e7ff', color: '#312e81' },
+        'N6':    { bg: '#f3e8ff', color: '#581c87' },
+        'AL':    { bg: '#d1fae5', color: '#064e3b' },
+        'TH':    { bg: '#ccfbf1', color: '#134e4a' },
+        'BT':    { bg: '#ecfccb', color: '#365314' },
+        'OFF':   { bg: '#e2e8f0', color: '#475569' },
+        'OFF/2': { bg: '#ffedd5', color: '#7c2d12' },
+        'D9':    { bg: '#dbeafe', color: '#1e3a8a' },
+        'A1':    { bg: '#fae8ff', color: '#701a75' }
+      };
+
+      // 1. Tiêu đề cột ngày (1 -> 31)
+      let dayHeadersHtml = '';
+      for (let d = 1; d <= daysCount; d++) {
+        const dateObj = new Date(state.year, state.month - 1, d);
+        const dow = dateObj.getDay();
+        const bgHead = dow === 0 ? '#ffe4e6' : (dow === 6 ? '#fef3c7' : '#f1f5f9');
+        const txtColor = dow === 0 ? '#9f1239' : '#1e293b';
+        dayHeadersHtml += `
+          <th style="border:1px solid #64748b; padding:2px 1px; background:${bgHead}; color:${txtColor}; font-size:7.5px; width:19px;">
+            <div>${d}</div>
+            <div style="font-size:6.5px; font-weight:normal;">${DAY_NAMES_VI[dow]}</div>
+          </th>`;
+      }
+
+      // 2. Dữ liệu nhân sự
+      let rowsHtml = '';
+      roster.forEach((emp, idx) => {
+        const stats = calculateEmployeeStats(emp);
+        let shiftCells = '';
+        for (let d = 0; d < daysCount; d++) {
+          const code = (emp.shifts[d] || '').trim().toUpperCase();
+          const styleObj = pdfColors[code] || { bg: '#ffffff', color: '#334155' };
+          shiftCells += `
+            <td style="border:1px solid #64748b; padding:2px 0; text-align:center; font-weight:bold; font-size:7.5px; background:${styleObj.bg}; color:${styleObj.color};">
+              ${code}
+            </td>`;
+        }
+
+        rowsHtml += `
+          <tr>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center;">${idx + 1}</td>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center; font-family:monospace;">${emp.msnv}</td>
+            <td style="border:1px solid #64748b; padding:2px 4px; text-align:left; font-weight:600; white-space:nowrap;">${emp.name}</td>
+            ${shiftCells}
+            <td style="border:1px solid #64748b; padding:2px; text-align:center;">${stats.countAL || ''}</td>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center;">${stats.countTH || ''}</td>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center;">${stats.countD1D3 || ''}</td>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center;">${stats.countM6 || ''}</td>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center;">${stats.countN7 || ''}</td>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center;">${stats.countN6 || ''}</td>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center;">${stats.countOFF || ''}</td>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center; font-weight:bold; background:#ecfdf5; color:#065f46;">${stats.totalHours}</td>
+            <td style="border:1px solid #64748b; padding:2px; text-align:center; font-weight:bold; background:#eff6ff; color:#1e40af;">${stats.overtime150 > 0 ? '+' + stats.overtime150 : '0'}</td>
+          </tr>`;
+      });
+
+      // 3. Thống kê quân số trực
+      const buildSummaryRow = (label, key, targetCount = null) => {
+        let cells = '';
+        for (let d = 0; d < daysCount; d++) {
+          const val = daily[d][key];
+          const isAlert = targetCount !== null && val !== targetCount;
+          const bg = isAlert ? '#ffe4e6' : '#f8fafc';
+          const color = isAlert ? '#be123c' : '#334155';
+          cells += `<td style="border:1px solid #64748b; padding:2px 0; text-align:center; font-weight:bold; background:${bg}; color:${color};">${val}</td>`;
+        }
+        return `
+          <tr>
+            <td colspan="3" style="border:1px solid #64748b; padding:2px 5px; text-align:right; font-weight:bold; background:#f1f5f9;">${label}</td>
+            ${cells}
+            <td colspan="9" style="border:1px solid #64748b; background:#f1f5f9;"></td>
+          </tr>`;
+      };
+
+      const footerRowsHtml =
+        buildSummaryRow('Quân số trực D1 / D3:', 'd1d3') +
+        buildSummaryRow('Quân số trực M6 (Chuẩn 2):', 'm6', 2) +
+        buildSummaryRow('Quân số trực N7 (Chuẩn 2):', 'n7', 2) +
+        buildSummaryRow('Quân số trực N6:', 'n6');
+
+      // 4. Chú thích mã ca
+      const legendItemsHtml = SHIFT_ORDER.map(code => {
+        const def = SHIFT_DEFS[code];
+        const c = pdfColors[code] || { bg: '#f1f5f9', color: '#0f172a' };
+        return `
+          <span style="display:inline-flex; align-items:center; gap:3px; margin-right:10px; margin-bottom:3px; font-size:7.5px;">
+            <b style="background:${c.bg}; color:${c.color}; border:1px solid #94a3b8; padding:0 3px; border-radius:2px;">${code}</b>: ${def.desc}
+          </span>`;
+      }).join('');
+
+      // 5. Khung trang A4 Ngang
+      const pdfWrapper = document.createElement('div');
+      pdfWrapper.style.width = '1060px';
+      pdfWrapper.style.padding = '12px 16px';
+      pdfWrapper.style.background = '#ffffff';
+      pdfWrapper.style.fontFamily = "'Inter', Arial, sans-serif";
+      pdfWrapper.style.color = '#0f172a';
+
+      pdfWrapper.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:1.5px solid #1e293b; padding-bottom:6px; margin-bottom:8px;">
+          <div>
+            <div style="font-weight:700; font-size:11px; text-transform:uppercase; color:#1d4ed8;">BỆNH VIỆN GIA AN 115</div>
+            <div style="font-weight:600; font-size:9.5px; color:#334155;">BỘ PHẬN QUẢN LÝ HẠ TẦNG</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-weight:700; font-size:15px; text-transform:uppercase; letter-spacing:0.5px;">LỊCH TRỰC THÁNG ${monthStr}/${state.year}</div>
+            <div style="font-size:9px; font-style:italic; color:#475569;">Từ ngày 01/${monthStr}/${state.year} đến ${daysCount}/${monthStr}/${state.year}</div>
+          </div>
+          <div style="text-align:right; font-size:9px; color:#334155;">
+            <div>Mã biểu mẫu: <b>QLHT-LT</b></div>
+            <div>Định mức chuẩn: <b>${state.standardHours} giờ</b></div>
+          </div>
+        </div>
+
+        <table style="width:100%; border-collapse:collapse; font-size:8px; table-layout:fixed;">
+          <thead>
+            <tr>
+              <th style="border:1px solid #64748b; padding:3px 1px; background:#e2e8f0; width:22px;">STT</th>
+              <th style="border:1px solid #64748b; padding:3px 1px; background:#e2e8f0; width:34px;">MSNV</th>
+              <th style="border:1px solid #64748b; padding:3px 4px; background:#e2e8f0; text-align:left; width:112px;">Họ và tên</th>
+              ${dayHeadersHtml}
+              <th style="border:1px solid #64748b; padding:2px 1px; background:#e2e8f0; width:20px;">AL</th>
+              <th style="border:1px solid #64748b; padding:2px 1px; background:#e2e8f0; width:20px;">TH</th>
+              <th style="border:1px solid #64748b; padding:2px 1px; background:#e2e8f0; width:20px;">HC</th>
+              <th style="border:1px solid #64748b; padding:2px 1px; background:#e2e8f0; width:20px;">M6</th>
+              <th style="border:1px solid #64748b; padding:2px 1px; background:#e2e8f0; width:20px;">N7</th>
+              <th style="border:1px solid #64748b; padding:2px 1px; background:#e2e8f0; width:20px;">N6</th>
+              <th style="border:1px solid #64748b; padding:2px 1px; background:#e2e8f0; width:22px;">OFF</th>
+              <th style="border:1px solid #64748b; padding:2px 1px; background:#d1fae5; color:#065f46; width:28px;">Tổngh</th>
+              <th style="border:1px solid #64748b; padding:2px 1px; background:#dbeafe; color:#1e40af; width:28px;">TC</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml}
+          </tbody>
+          <tfoot>
+            ${footerRowsHtml}
+          </tfoot>
+        </table>
+
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-top:8px; gap:16px;">
+          <div style="flex:1; border:1px solid #cbd5e1; border-radius:4px; padding:5px 8px; background:#f8fafc;">
+            <div style="font-weight:700; font-size:8px; text-transform:uppercase; color:#475569; margin-bottom:3px;">Ký hiệu quy ước & Quy đổi giờ công:</div>
+            <div style="line-height:1.4;">${legendItemsHtml}</div>
+          </div>
+
+          <div style="width:360px; display:flex; justify-content:space-around; text-align:center; padding-top:2px;">
+            <div>
+              <div style="font-weight:700; font-size:8.5px; text-transform:uppercase;">Người lập biểu</div>
+              <div style="font-size:7.5px; color:#64748b;">Phụ trách bộ phận QLHT</div>
+              <div style="height:34px;"></div>
+              <div style="font-weight:700; font-size:8.5px;">Phạm Hữu Nghĩa</div>
+            </div>
+            <div>
+              <div style="font-weight:700; font-size:8.5px; text-transform:uppercase;">Ban Giám Đốc duyệt</div>
+              <div style="font-size:7.5px; color:#64748b;">Bệnh viện Gia An 115</div>
+              <div style="height:34px;"></div>
+              <div style="font-size:7.5px; color:#94a3b8; font-style:italic;">(Ký & ghi rõ họ tên)</div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const opt = {
+        margin:       [5, 5, 5, 5],
+        filename:     `LichTruc_QLHT_BV_GiaAn_115_T${monthStr}_${state.year}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, logging: false },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+      };
+
+      html2pdf().set(opt).from(pdfWrapper).save().then(() => {
+        showToast('Đã xuất file PDF khổ A4 ngang thành công!');
+      }).catch(err => {
+        console.error('Lỗi xuất PDF:', err);
+        showToast('Có lỗi khi tạo PDF, vui lòng thử lại!');
+      });
+    }
+
+    function exportToCSV() {
+      const roster = getCurrentRoster();
+      const daysCount = getDaysInMonth(state.year, state.month);
+
+      let csvContent = `\uFEFFSTT,MSNV,Họ và tên`;
+      for (let d = 1; d <= daysCount; d++) csvContent += `,Ngay ${d}`;
+      csvContent += `,AL,TH,HC,M6,N7,N6,OFF,TongH,TC150\n`;
+
+      roster.forEach((emp, idx) => {
+        const stats = calculateEmployeeStats(emp);
+        let row = `${idx + 1},${emp.msnv},"${emp.name}"`;
+        for (let d = 0; d < daysCount; d++) {
+          row += `,${emp.shifts[d] || ''}`;
+        }
+        row += `,${stats.countAL},${stats.countTH},${stats.countD1D3},${stats.countM6},${stats.countN7},${stats.countN6},${stats.countOFF},${stats.totalHours},${stats.overtime150}\n`;
+        csvContent += row;
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `LichTruc_QLHT_T${state.month}_${state.year}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Đã xuất file CSV thành công!');
+    }
+
+    // =========================================================================
+    // 10. RESET & SAMPLE RESTORATION
+    // =========================================================================
+    function restoreSampleAugust2026() {
+      if (!confirm('Khôi phục lại dữ liệu mẫu Tháng 08/2026 chuẩn từ Book1.xlsx?')) return;
+      state.year = 2026;
+      state.month = 8;
+      state.standardHours = 208;
+      state.schedules['2026-08'] = JSON.parse(JSON.stringify(SAMPLE_AUG_2026_STAFF));
+      renderUI();
+      saveState();
+      showToast('Đã khôi phục mẫu Tháng 08/2026 thành công!');
+    }
+
+    function clearCurrentMonth() {
+      if (!confirm('Xóa trắng toàn bộ lịch trực của tháng này?')) return;
+      const roster = getCurrentRoster();
+      roster.forEach(emp => {
+        emp.shifts = Array(emp.shifts.length).fill('');
+      });
+      renderUI();
+      saveState();
+      showToast('Đã xóa trắng lịch tháng này');
+    }
+
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = message;
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    // =========================================================================
+    // 11. INITIALIZATION ON PAGE LOAD
+    // =========================================================================
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      renderUI();
+    });
+  </script>
+</body>
+</html>
